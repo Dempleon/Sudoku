@@ -74,6 +74,7 @@ def clicked_square(squares, x, y):
 
 
 def main():
+    print('Just Testing')
     pygame.init()
     window = pygame.display.set_mode((600, 600))
     clock = pygame.time.Clock()
