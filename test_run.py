@@ -11,6 +11,16 @@ board = [[7, 8, 0, 4, 0, 0, 1, 2, 0],
          [1, 2, 0, 0, 0, 7, 4, 0, 0],
          [0, 4, 9, 2, 0, 6, 0, 0, 7]]
 
+test_board = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0],
+              [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
 text_blinking = False
 
 
@@ -71,6 +81,10 @@ def clicked_square(squares, x, y):
         for j in range(9):
             squares[i][j].selected = False
     squares[int(col)][int(row)].selected = True
+    for event in pygame.event.get():
+        if event.type == KEYDOWN:
+            if event.key == K_1:
+                squares[row][col].value = 1
 
 
 def main():
@@ -81,10 +95,12 @@ def main():
     blink_timer = 0
 
     running = True
-    squares = [[Square(board[i][j], j, i, (window.get_width(), window.get_height())) for j in range(9)] for i in
+    squares = [[Square(test_board[i][j], j, i, (window.get_width(), window.get_height())) for j in range(9)] for i in
                range(9)]
     mouse_x = None
     mouse_y = None
+    selected_something = False
+    selected = [-1, -1]
     global text_blinking
 
     while running:
@@ -95,9 +111,33 @@ def main():
             elif event.type == KEYDOWN:
                 if event.key == K_ESCAPE:
                     running = False
+                if selected_something:
+                    if event.key == K_0:
+                        squares[int(selected[0])][int(selected[1])].value = 0
+                    if event.key == K_1:
+                        squares[int(selected[0])][int(selected[1])].value = 1
+                    if event.key == K_2:
+                        squares[int(selected[0])][int(selected[1])].value = 2
+                    if event.key == K_3:
+                        squares[int(selected[0])][int(selected[1])].value = 3
+                    if event.key == K_4:
+                        squares[int(selected[0])][int(selected[1])].value = 4
+                    if event.key == K_5:
+                        squares[int(selected[0])][int(selected[1])].value = 5
+                    if event.key == K_6:
+                        squares[int(selected[0])][int(selected[1])].value = 6
+                    if event.key == K_7:
+                        squares[int(selected[0])][int(selected[1])].value = 7
+                    if event.key == K_8:
+                        squares[int(selected[0])][int(selected[1])].value = 8
+                    if event.key == K_9:
+                        squares[int(selected[0])][int(selected[1])].value = 9
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
+                    selected_something = True
                     mouse_x, mouse_y = pygame.mouse.get_pos()
+                    selected[1] = mouse_x / 66.666
+                    selected[0] = mouse_y / 66.666
                     print(str(mouse_x) + ' ' + str(mouse_y))
                     clicked_square(squares, mouse_x, mouse_y)
 
