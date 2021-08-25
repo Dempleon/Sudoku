@@ -27,7 +27,7 @@ text_blinking = False
 def draw_board(window, squares):
     window.fill((255, 255, 255))
     tile_width = window.get_width() / 9
-    tile_height = window.get_height() / 9
+    tile_height = (window.get_height() - 100) / 9
     gap = tile_height
     # draw vertical lines
     for i in range(9):
@@ -35,8 +35,16 @@ def draw_board(window, squares):
             thickness = 4
         else:
             thickness = 1
-        pygame.draw.line(window, (0, 0, 0), (i * tile_width, 0), (i * tile_width, window.get_height()), thickness)
+        pygame.draw.line(window, (0, 0, 0), (i * tile_width, 0), (i * tile_width, window.get_height() - 100), thickness)
+
+    for i in range(10):
+        if i % 3 == 0 and i != 0:
+            thickness = 4
+        else:
+            thickness = 1
+
         pygame.draw.line(window, (0, 0, 0), (0, i * tile_height), (window.get_width(), i * tile_height), thickness)
+
 
     # font = pygame.font.SysFont('Arial', 40)
     # for i in range(9):
@@ -49,13 +57,12 @@ def draw_board(window, squares):
 
 
 class Square:
-    def __init__(self, value, row, col, dimensions):
+    def __init__(self, value, row, col, side):
         self.value = value
         self.temp = 0
         self.row = row
         self.col = col
-        self.width = dimensions[0] / 9
-        self.height = dimensions[1] / 9
+        self.side_length = side / 9
         self.selected = False
 
     def draw(self, window):
@@ -64,12 +71,12 @@ class Square:
         underscore = font.render('_', True, (0, 0, 0))
         if self.selected:
             pygame.draw.rect(window, (0, 255, 0),
-                             (self.row * self.width, self.col * self.height, self.width, self.width))
+                             (self.row * self.side_length, self.col * self.side_length, self.side_length, self.side_length))
             if self.value == 0:
                 if text_blinking:
-                    window.blit(underscore, (self.row * self.width, self.col * self.height))
+                    window.blit(underscore, (self.row * self.side_length, self.col * self.side_length))
         if self.value != 0:
-            window.blit(number, (self.row * self.width, self.col * self.height))
+            window.blit(number, (self.row * self.side_length, self.col * self.side_length))
 
 
 def clicked_square(squares, x, y):
@@ -90,12 +97,12 @@ def clicked_square(squares, x, y):
 def main():
     print('Just Testing')
     pygame.init()
-    window = pygame.display.set_mode((600, 600))
+    window = pygame.display.set_mode((600, 700))
     clock = pygame.time.Clock()
     blink_timer = 0
 
     running = True
-    squares = [[Square(test_board[i][j], j, i, (window.get_width(), window.get_height())) for j in range(9)] for i in
+    squares = [[Square(test_board[i][j], j, i, window.get_width()) for j in range(9)] for i in
                range(9)]
     mouse_x = None
     mouse_y = None
@@ -139,7 +146,8 @@ def main():
                     selected[1] = mouse_x / 66.666
                     selected[0] = mouse_y / 66.666
                     print(str(mouse_x) + ' ' + str(mouse_y))
-                    clicked_square(squares, mouse_x, mouse_y)
+                    if mouse_y <= 600:
+                        clicked_square(squares, mouse_x, mouse_y)
 
         draw_board(window, squares)
         pygame.display.update()
