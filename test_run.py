@@ -11,15 +11,25 @@ board = [[7, 8, 0, 4, 0, 0, 1, 2, 0],
          [1, 2, 0, 0, 0, 7, 4, 0, 0],
          [0, 4, 9, 2, 0, 6, 0, 0, 7]]
 
-test_board = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0],
-              [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+blank_board = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0],
+               [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+test_board = [[3, 0, 6, 5, 0, 8, 4, 0, 0],
+              [5, 2, 0, 0, 0, 0, 0, 0, 0],
+              [0, 8, 7, 0, 0, 0, 0, 3, 1],
+              [0, 0, 3, 0, 1, 0, 0, 8, 0],
+              [9, 0, 0, 8, 6, 3, 0, 0, 5],
+              [0, 5, 0, 0, 9, 0, 6, 0, 0],
+              [1, 3, 0, 0, 0, 0, 2, 5, 0],
+              [0, 0, 0, 0, 0, 0, 0, 7, 4],
+              [0, 0, 5, 2, 0, 6, 3, 0, 0]]
 
 text_blinking = False
 
@@ -44,7 +54,6 @@ def draw_board(window, squares):
             thickness = 1
 
         pygame.draw.line(window, (0, 0, 0), (0, i * tile_height), (window.get_width(), i * tile_height), thickness)
-
 
     # font = pygame.font.SysFont('Arial', 40)
     # for i in range(9):
@@ -71,27 +80,106 @@ class Square:
         underscore = font.render('_', True, (0, 0, 0))
         if self.selected:
             pygame.draw.rect(window, (0, 255, 0),
-                             (self.row * self.side_length, self.col * self.side_length, self.side_length, self.side_length))
-            if self.value == 0:
-                if text_blinking:
+                             (self.row * self.side_length, self.col * self.side_length, self.side_length,
+                              self.side_length))
+            # if self.value == 0:
+            #     if text_blinking:
+            #         window.blit(underscore, (self.row * self.side_length, self.col * self.side_length))
+            # elif text_blinking:
+            #     window.blit(number, (self.row * self.side_length, self.col * self.side_length))
+            if text_blinking:
+                if self.value == 0:
                     window.blit(underscore, (self.row * self.side_length, self.col * self.side_length))
-        if self.value != 0:
-            window.blit(number, (self.row * self.side_length, self.col * self.side_length))
+                else:
+                    window.blit(number, (self.row * self.side_length, self.col * self.side_length))
+        else:
+            if self.value != 0:
+                window.blit(number, (self.row * self.side_length, self.col * self.side_length))
 
 
 def clicked_square(squares, x, y):
-    row = x / (66.666)
-    col = y / (66.666)
+    row = x / 66.666
+    col = y / 66.666
     print(str(row) + ' ' + str(col))
     print(squares[int(col)][int(row)].value)
     for i in range(9):
         for j in range(9):
             squares[i][j].selected = False
     squares[int(col)][int(row)].selected = True
-    for event in pygame.event.get():
-        if event.type == KEYDOWN:
-            if event.key == K_1:
-                squares[row][col].value = 1
+    # for event in pygame.event.get():
+    #     if event.type == KEYDOWN:
+    #         if event.key == K_1:
+    #             squares[row][col].value = 1
+
+
+def print_board(squares):
+    for i in range(9):
+        for j in range(9):
+            print(squares[i][j].value, end='')
+        print('')
+
+
+def solve(squares):
+    print('Solving the squares')
+    if is_done(squares):
+        return True
+
+    is_empty = find_empty(squares)
+    if is_empty:
+        print_board(squares)
+        for i in range(1, 10):
+            print(i)
+            if valid(i, squares, is_empty[0], is_empty[1]):
+                squares[is_empty[0]][is_empty[1]].value = i
+
+                if is_done(squares):
+                    return True
+                if solve(squares):
+                    return True
+        squares[is_empty[0]][is_empty[1]].value = 0
+        return False
+
+
+def find_empty(squares):
+    for i in range(9):
+        for j in range(9):
+            if squares[i][j].value == 0:
+                print('empty ' + str(i) + ' ' + str(j))
+                return [i, j]
+
+    return False
+
+
+def is_done(squares):
+    for i in range(9):
+        for j in range(9):
+            # print(squares[i][j].value)
+            if squares[i][j].value == 0:
+                print('not done')
+                return False
+
+    print('done')
+    return True
+
+
+def valid(value, squares, row, col):
+    for i in range(9):
+        if squares[row][i].value == value:
+            return False
+        if squares[i][col].value == value:
+            return False
+
+    box_x = row // 3
+    box_y = col // 3
+
+    for i in range(box_x * 3, box_x * 3 + 3):
+        for j in range(box_y * 3, box_y * 3 + 3):
+            if squares[i][j].value == value and (i != row and j != col):
+                return False
+            # if squares[i][j].value == value:
+            #     return False
+
+    return True
 
 
 def main():
@@ -104,11 +192,13 @@ def main():
     running = True
     squares = [[Square(test_board[i][j], j, i, window.get_width()) for j in range(9)] for i in
                range(9)]
-    mouse_x = None
-    mouse_y = None
+    # mouse_x = None
+    # mouse_y = None
     selected_something = False
     selected = [-1, -1]
     global text_blinking
+
+    # solve(squares)
 
     while running:
 
@@ -139,13 +229,23 @@ def main():
                         squares[int(selected[0])][int(selected[1])].value = 8
                     if event.key == K_9:
                         squares[int(selected[0])][int(selected[1])].value = 9
+                    if event.key == K_s:
+                        print('solving')
+                        if solve(squares):
+                            print_board(squares)
+                        else:
+                            print('no solution')
+
+                    draw_board(window, squares)
+                    blink_timer = 0
+                    text_blinking = True
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
                     selected_something = True
                     mouse_x, mouse_y = pygame.mouse.get_pos()
                     selected[1] = mouse_x / 66.666
                     selected[0] = mouse_y / 66.666
-                    print(str(mouse_x) + ' ' + str(mouse_y))
+                    # print(str(mouse_x) + ' ' + str(mouse_y))
                     if mouse_y <= 600:
                         clicked_square(squares, mouse_x, mouse_y)
 
