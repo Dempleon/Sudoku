@@ -260,6 +260,7 @@ def main():
     running = True
     squares = [[Square(rand_board[i][j], j, i, window.get_width()) for j in range(9)] for i in
                range(9)]
+    new_board(squares, 4)
     # mouse_x = None
     # mouse_y = None
     selected_something = False
