@@ -1,5 +1,8 @@
+import random
+
 import pygame
 from pygame.locals import *
+import copy
 
 board = [[7, 8, 0, 4, 0, 0, 1, 2, 0],
          [6, 0, 0, 0, 7, 5, 0, 0, 9],
@@ -20,6 +23,16 @@ blank_board = [[0, 0, 0, 0, 0, 0, 0, 0, 0],
                [0, 0, 0, 0, 0, 0, 0, 0, 0],
                [0, 0, 0, 0, 0, 0, 0, 0, 0],
                [0, 0, 0, 0, 0, 0, 0, 0, 0]]
+
+rand_board = [[4, 3, 5, 2, 6, 9, 7, 8, 1],
+              [6, 8, 2, 5, 7, 1, 4, 9, 3],
+              [1, 9, 7, 8, 3, 4, 5, 6, 2],
+              [8, 2, 6, 1, 9, 5, 3, 4, 7],
+              [3, 7, 4, 6, 8, 2, 9, 1, 5],
+              [9, 5, 1, 7, 4, 3, 6, 2, 8],
+              [5, 1, 9, 3, 2, 6, 8, 7, 4],
+              [2, 4, 8, 9, 5, 7, 1, 3, 6],
+              [7, 6, 3, 4, 1, 8, 2, 5, 9]]
 
 test_board = [[3, 0, 6, 5, 0, 8, 4, 0, 0],
               [5, 2, 0, 0, 0, 0, 0, 0, 0],
@@ -95,6 +108,61 @@ class Square:
         else:
             if self.value != 0:
                 window.blit(number, (self.row * self.side_length, self.col * self.side_length))
+
+
+def blank_board(squares):
+    for i in range(9):
+        for j in range(9):
+            squares[i][j].value = 0
+
+
+def shuffle_rows(squares):
+    rand_group = random.randint(0, 2)
+    row1 = 3 * rand_group + random.randint(0, 2)
+    row2 = 3 * rand_group + random.randint(0, 2)
+    while row1 == row2:
+        row1 = 3 * rand_group + random.randint(0, 2)
+
+    for i in range(9):
+        temp = squares[row1][i].value
+        squares[row1][i].value = squares[row2][i].value
+        squares[row2][i].value = temp
+
+
+def shuffle_cols(squares):
+    rand_group = random.randint(0, 2)
+    col1 = 3 * rand_group + random.randint(0, 2)
+    col2 = 3 * rand_group + random.randint(0, 2)
+
+    while col1 == col2:
+        col1 = 3 * rand_group + random.randint(0, 2)
+
+    for i in range(9):
+        temp = squares[i][col1].value
+        squares[i][col1].value = squares[i][col2].value
+        squares[i][col2].value = temp
+
+
+# easy board 25 filled in squares
+def new_board(squares, difficulty):
+    num_known = difficulty * 10
+
+    for i in range(9):
+        for j in range(9):
+            squares[i][j].value = rand_board[i][j]
+
+    for i in range(100):
+        shuffle_rows(squares)
+        shuffle_cols(squares)
+
+    for i in range(81 - num_known):
+        row = random.randint(0, 8)
+        col = random.randint(0, 8)
+        while squares[row][col].value == 0:
+            row = random.randint(0, 8)
+            col = random.randint(0, 8)
+
+        squares[row][col].value = 0
 
 
 def clicked_square(squares, x, y):
@@ -190,7 +258,7 @@ def main():
     blink_timer = 0
 
     running = True
-    squares = [[Square(test_board[i][j], j, i, window.get_width()) for j in range(9)] for i in
+    squares = [[Square(rand_board[i][j], j, i, window.get_width()) for j in range(9)] for i in
                range(9)]
     # mouse_x = None
     # mouse_y = None
@@ -229,6 +297,18 @@ def main():
                         squares[int(selected[0])][int(selected[1])].value = 8
                     if event.key == K_9:
                         squares[int(selected[0])][int(selected[1])].value = 9
+                    if event.key == K_e:
+                        print('new easy')
+                        new_board(squares, 4)
+                    if event.key == K_c:
+                        print('shuffle columns')
+                        shuffle_cols(squares)
+                    if event.key == K_n:
+                        print('new board')
+                        blank_board(squares)
+                    if event.key == K_r:
+                        print('shuffle rows')
+                        shuffle_rows(squares)
                     if event.key == K_s:
                         print('solving')
                         if solve(squares):
@@ -241,8 +321,11 @@ def main():
                     text_blinking = True
             elif event.type == MOUSEBUTTONDOWN:
                 if event.button == 1:
-                    selected_something = True
                     mouse_x, mouse_y = pygame.mouse.get_pos()
+                    if mouse_y and mouse_y <= window.get_width():
+                        selected_something = True
+                    else:
+                        selected_something = False
                     selected[1] = mouse_x / 66.666
                     selected[0] = mouse_y / 66.666
                     # print(str(mouse_x) + ' ' + str(mouse_y))
